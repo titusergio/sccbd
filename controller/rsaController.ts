@@ -2,9 +2,7 @@ import { Request,Response } from 'express';
 import * as bc from "bigint-conversion";
 import * as rsa from '../models/rsa'
 
-
 let keyPair:rsa.rsaKeyPair
-
 
 //generate RSA key pair
 export async function createRsaPair(req: Request, res: Response){ 
@@ -19,6 +17,7 @@ export async function createRsaPair(req: Request, res: Response){
   res.status(200).send("Key pair creared succesfully!");
   }
 
+//get public RSA key
 export async function getPublicKeyRSA(req: Request, res: Response) {
 
   if(keyPair==null){
@@ -30,7 +29,6 @@ export async function getPublicKeyRSA(req: Request, res: Response) {
        let data = {
         e: bc.bigintToHex(keyPair.publicKey.e),
         n: bc.bigintToHex(keyPair.publicKey.n),
-        j: keyPair.publicKey.e.toString(16)
       }; 
       console.log("Sending public key")
       res.status(200).send(data);
@@ -40,17 +38,15 @@ export async function getPublicKeyRSA(req: Request, res: Response) {
     }
   }
 
+//encryp text message with public public key
 export async function encryptMessage (req: Request, res: Response) {
 
-  
   const message:string = req.body.message;
   const m:bigint=bc.textToBigint(message)
-
 
   if(keyPair==null){
     res.status(500).json({ message: "Please generate a rsa key pair before!" });
     return;
-    
   }
 
   try {
@@ -65,14 +61,14 @@ export async function encryptMessage (req: Request, res: Response) {
     }
   }
 
-  export async function encryptBlind (req: Request, res: Response) {
+//encryp message encrypted or message in BigInt format
+export async function encryptBlind (req: Request, res: Response) {
 
   const m:bigint=BigInt(req.body.message)
 
   if(keyPair==null){
     res.status(500).json({ message: "Please generate a rsa key pair before!" });
     return;
-    
   }
 
   try {
@@ -87,32 +83,29 @@ export async function encryptMessage (req: Request, res: Response) {
     }
   }
 
+//decryp message with private key
 export async function decrypt (req: Request, res: Response) {
 
-  
-    const encrypted_message: bigint =  BigInt(req.body.message); 
-    console.log("encrypted_message", encrypted_message)
-  
-    if(keyPair==null){
-      res.status(500).json({ message: "Please generate a rsa key pair before!" });
-      return;
-      
-    }
-  
-    try {
-         let data = {
-          decrypted_message: bc.bigintToText(keyPair.privateKey.decrypt(encrypted_message)),
-        }; 
-        console.log("Sending decrypted message: ", keyPair.privateKey.decrypt(encrypted_message))
-        res.status(200).send(data);
-      } catch (err) {
-        res.status(500).json({ message: "Server error" });
-        console.log("Internal error ocurred: ", err)
-      }
+  const encrypted_message : bigint =  BigInt(req.body.message); 
+
+  if(keyPair==null){
+    res.status(500).json({ message: "Please generate a rsa key pair before!" });
+    return;
   }
 
-  
+  try{
+    let data = {
+    decrypted_message: bc.bigintToText(keyPair.privateKey.decrypt(encrypted_message)),
+  }; 
+  console.log("Sending decrypted message: ", keyPair.privateKey.decrypt(encrypted_message))
+  res.status(200).send(data);
+} catch (err) {
+  res.status(500).json({ message: "Server error" });
+  console.log("Internal error ocurred: ", err)
+    }
+}
 
+//sign message with private key
 export async function signMessage (req: Request, res: Response) {
   
   const message:string = req.body.message;
@@ -133,7 +126,7 @@ export async function signMessage (req: Request, res: Response) {
     res.status(500).json({ message: "Server error" }); 
       console.log("Internal error ocurred: ", err)
   }
-}
+  }
 
 export async function signBlind (req: Request, res: Response) {
   
@@ -154,7 +147,7 @@ export async function signBlind (req: Request, res: Response) {
     res.status(500).json({ message: "Server error" }); 
       console.log("Internal error ocurred: ", err)
   }
-}
+  }
     
 export async function verifyMessage (req: Request, res: Response) {
     
@@ -182,7 +175,8 @@ try {
     res.status(500).json({ message: "Server error" });
     console.log("Internal error ocurred: ", err)
   }
-}
+  }
+  
 export async function verifyBlind (req: Request, res: Response) {
     
   const signed_message: bigint =  BigInt(req.body.signed); 
