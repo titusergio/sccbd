@@ -1,8 +1,11 @@
 import { Request,Response } from 'express';
 import * as bc from "bigint-conversion";
 import * as rsa from '../models/rsa'
+import sha256 from "fast-sha256";
+import { modInv } from 'bigint-crypto-utils';
 
 let keyPair:rsa.rsaKeyPair
+let blindFactor : bigint
 
 //generate RSA key pair
 export async function createRsaPair(req: Request, res: Response){ 
@@ -128,20 +131,46 @@ export async function signMessage (req: Request, res: Response) {
   }
   }
 
-export async function signBlind (req: Request, res: Response) {
+//get blind identity
+export async function getBlind (req: Request, res: Response) {
   
-  const m:bigint=BigInt(req.body.message)
-    
-  if(keyPair==null){
-    res.status(500).json({ message: "Please generate a rsa key pair before!" });
-    return;
-  }
+  blindFactor =  BigInt(Math.random() * 100)
+  console.log(blindFactor)
+
+  //const hashed_message = sha256(message)
+
+  //const blindedMessage : string = message * 
+  const blindedMessage = keyPair.publicKey.encrypt(blindFactor)
+  
 
   try {
     let data = {
-    signed_message: String(keyPair.privateKey.sign(m)), 
+    blinded_message: String( blindedMessage), 
     }; 
-    console.log("Sending signed bigint message: ", keyPair.privateKey.sign(m))
+    res.status(200).send(data);
+  }catch (err) {
+    res.status(500).json({ message: "Server error" }); 
+      console.log("Internal error ocurred: ", err)
+  }
+  }
+
+  //get blind identity
+export async function unblind (req: Request, res: Response) {
+  
+  blindFactor =  BigInt(Math.random() * 100)
+  console.log(blindFactor)
+
+  const blindSigned:bigint = BigInt(req.body.message);
+
+  //const hashed_message = sha256(message)
+
+
+  const unblindedMessage : bigint = modInv( (blindSigned / blindFactor) , keyPair.privateKey.n) 
+  
+  try {
+    let data = {
+    unblinded_message: String( unblindedMessage), 
+    }; 
     res.status(200).send(data);
   }catch (err) {
     res.status(500).json({ message: "Server error" }); 
