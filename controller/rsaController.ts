@@ -130,10 +130,34 @@ export async function signMessage (req: Request, res: Response) {
   }
   }
 
+  //sign message with private key
+export async function signBlind (req: Request, res: Response) {
+  
+  
+  const m:bigint=BigInt(req.body.message);
+    
+  if(keyPair==null){
+    res.status(500).json({ message: "Please generate a rsa key pair before!" });
+    return;
+  }
+
+  try {
+    let data = {
+    signed_message: String(keyPair.privateKey.sign(m)), 
+    }; 
+    console.log("Sending signed bigint message: ", keyPair.privateKey.sign(m))
+    res.status(200).send(data);
+  }catch (err) {
+    res.status(500).json({ message: "Server error" }); 
+      console.log("Internal error ocurred: ", err)
+  }
+  }
+
 //get blind identity
 export async function getBlind (req: Request, res: Response) {
   
-  blindFactor =  BigInt(Math.random() * 100)
+  //blindFactor =  BigInt(Math.random() * 100
+  blindFactor = 123456789n
   console.log("blind factor", blindFactor)
  
   const blindedMessage = keyPair.publicKey.encrypt(blindFactor)
