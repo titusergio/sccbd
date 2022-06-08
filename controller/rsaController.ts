@@ -156,11 +156,12 @@ export async function signBlind (req: Request, res: Response) {
 //get blind identity
 export async function getBlind (req: Request, res: Response) {
   
-  //blindFactor =  BigInt(Math.random() * 100
+  //blindFactor =  BigInt(Math.random() * 100 )
   blindFactor = 123456789n
   console.log("blind factor", blindFactor)
+  const messageToBlind: bigint = 1212121212n
  
-  const blindedMessage = keyPair.publicKey.encrypt(blindFactor)
+  const blindedMessage = messageToBlind * keyPair.publicKey.encrypt(blindFactor)
   console.log("blinded message", blindedMessage)
   
 
