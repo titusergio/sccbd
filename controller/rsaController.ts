@@ -1,7 +1,6 @@
 import { Request,Response } from 'express';
 import * as bc from "bigint-conversion";
 import * as rsa from '../models/rsa'
-import sha256 from "fast-sha256";
 import { modInv } from 'bigint-crypto-utils';
 
 let keyPair:rsa.rsaKeyPair
@@ -135,12 +134,10 @@ export async function signMessage (req: Request, res: Response) {
 export async function getBlind (req: Request, res: Response) {
   
   blindFactor =  BigInt(Math.random() * 100)
-  console.log(blindFactor)
-
-  //const hashed_message = sha256(message)
-
-  //const blindedMessage : string = message * 
+  console.log("blind factor", blindFactor)
+ 
   const blindedMessage = keyPair.publicKey.encrypt(blindFactor)
+  console.log("blinded message", blindedMessage)
   
 
   try {
@@ -154,18 +151,18 @@ export async function getBlind (req: Request, res: Response) {
   }
   }
 
-  //get blind identity
+//unlind
 export async function unblind (req: Request, res: Response) {
   
-  blindFactor =  BigInt(Math.random() * 100)
-  console.log(blindFactor)
-
+ 
   const blindSigned:bigint = BigInt(req.body.message);
 
   //const hashed_message = sha256(message)
 
 
-  const unblindedMessage : bigint = modInv( (blindSigned / blindFactor) , keyPair.privateKey.n) 
+  const unblindedMessage : bigint = modInv( (blindSigned / blindFactor) , keyPair.privateKey.n)
+  
+  console.log("Unblinded message", unblindedMessage)
   
   try {
     let data = {
