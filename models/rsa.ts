@@ -1,6 +1,7 @@
 import * as bcu from 'bigint-crypto-utils'
 
 
+
 export interface rsaKeyPair {
   publicKey: RsaPublicKey
   privateKey: RsaPrivateKey
@@ -41,6 +42,31 @@ export class RsaPublicKey {
 
   verify (c: bigint ): bigint {
     return bcu.modPow(c, this.e, this.n)
+  }
+
+  blind ( m : bigint, r : bigint) : bigint {
+
+    //let blindMessage : number = (m * Math.pow(r,Number(this.e))) % Number(this.n);
+    //return BigInt(blindMessage)
+    
+    //this method was trying blind bigint
+    
+    let blindMessage = ( m * (r ** this.e) ) % this.n
+    //let blindMessage = bcu.modPow(blindFactor,1, this.n)
+    return blindMessage
+    
+    
+    
+  }
+
+  unblind ( b : bigint , r : bigint) : bigint {
+
+    //this method was trying blind bigint
+    
+    let unblindFactor = ( b * (r**(-1n)) ) % this.n    // sames as b/r ?
+    //let unblind = bcu.modPow(unblindFactor,1n,this.n)
+    return unblindFactor
+    
   }
 
 }
