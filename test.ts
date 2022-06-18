@@ -19,6 +19,9 @@ async function testApp() {
         balance1 : 10n,
         balance2 : 5n
     }
+
+
+    /*
     
 
 
@@ -95,6 +98,10 @@ async function testApp() {
     //console.log("decrypt balance 1: ", Alice.paillierKeys.privateKey.decrypt(balance1Encrypted))
     //console.log("alice check: ", aliceCheckOperation)
     if ( aliceCheckOperation == (Alice.balance1 + Alice.balance2)) console.log("Homomorphic operation was successful")
+
+
+
+    */
 
 
     
